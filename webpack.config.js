@@ -9,8 +9,9 @@ var ExtractLESS = new ExtractTextPlugin('style/app.css')
 module.exports = {
   // 入口定义
   entry: {
-    vendor: ['react', 'react-dom', 'react-router'],
-    app: './js/app.js'
+  	app: './js/script/app.js',
+    vendor: ['react', 'react-dom', 'react-router']
+
   },
 
   // 出口定义
@@ -117,7 +118,7 @@ module.exports = {
     // 抽离CSS vendor， less
     ExtractCSS,
     ExtractLESS
-  ],
+  ]
 
   // externals
   // externals: {
