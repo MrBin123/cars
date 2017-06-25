@@ -1,0 +1,27 @@
+img {
+  width: 50px ;
+  height: 50px;
+}
+.ant-table-tbody > tr > td,
+.ant-table-thead > tr > th {
+  text-align: center;
+  padding: 8px;
+}
+.ant-table-thead > tr > th {
+  color: #000;
+  font-weight: bolder;
+}
+.ant-table-tbody > tr > td a {
+  color: #fff;
+  background: #d9534f;
+  display: block;
+  width: 40%;
+  border-radius: 10px;
+  height: 40px;
+  line-height: 40px;
+  border: 1px solid #d9534f;
+  text-align: center;
+  margin: auto;
+  font-size: 16px;
+  font-weight: 400;
+}
