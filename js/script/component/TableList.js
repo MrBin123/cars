@@ -1,6 +1,9 @@
 import React from 'react'
-import { Table, Input, Icon, Button, Popconfirm } from 'antd';
 
+import { Table, Input, Icon, Button, Popconfirm,Modal,InputNumber,Select,Tooltip } from 'antd';
+function onChange(value) {
+  console.log( value);
+}
 class EditableCell extends React.Component {
   state = {
     value: this.props.value,
@@ -53,12 +56,12 @@ class EditableCell extends React.Component {
     );
   }
 }
-
 export default class TableList extends React.Component {
+
   constructor(props) {
     super(props);
     this.columns = [{
-      title: '商品序号',
+      title: '序号',
       dataIndex: 'goodsIndex',
       width: '10%',
       sorter: (a, b) => a.goodsIndex - b.goodsIndex,
@@ -66,10 +69,10 @@ export default class TableList extends React.Component {
       title: '商品名称',
       dataIndex: 'goodsName',
       width: '30%',
-      render: (text, record, index) => (
+       render: (text, record, index) => (
         <EditableCell
           value={text}
-          onChange={this.onCellChange(index, 'name')}
+          onChange={this.onCellChange(index, 'goodsName')}
         />
       )
     }, {
@@ -80,7 +83,7 @@ export default class TableList extends React.Component {
       render: (text, record, index) => (
         <EditableCell
           value={text}
-          onChange={this.onCellChange(index, 'name')}
+          onChange={this.onCellChange(index, 'goodsPrice')}
         />
       )
     }, {
@@ -91,7 +94,7 @@ export default class TableList extends React.Component {
       render: (text, record, index) => (
         <EditableCell
           value={text}
-          onChange={this.onCellChange(index, 'name')}
+          onChange={this.onCellChange(index, 'goodsCount')}
         />
       )
     }
@@ -101,7 +104,7 @@ export default class TableList extends React.Component {
       }
     
     , {
-      title: '商品操作',
+      title: '商品删除',
       dataIndex: 'goodsOperation',
       render: (text, record, index) => {
         return (
@@ -110,80 +113,186 @@ export default class TableList extends React.Component {
             <Popconfirm title="确定删除?" onConfirm={() => this.onDelete(index)}>
               <a href="#">删除</a>
             </Popconfirm>
+            
           ) : null
         );
       },
-    }];
-
+    }, {
+      title: '商品添加',
+      dataIndex: 'goodsAdd',
+      render: (text, record, index) => {
+        return (
+          this.state.dataSource.length > 1 ?
+          (
+         
+           <Button type="primary" onClick={() => this.setModalVisible(true)}>添加</Button>
+         
+            
+          ) : null
+        );
+      },
+    }
+    
+    ];
     this.state = {
-      dataSource: [{
-        key: '0',
-        goodsIndex: '1',
-        goodsName: '博世空frwerferf气滤清器1',
-        goodsPrice: '100',
-        goodsCount:'1001',
-        goodsSrc:<img src="http://image.autozi.com/goods/6114/672/1309051537583735/thumb_960/thumb_960_96095744585-cbe9-4723-845c-c4cd97e333eb.jpg"/>
-
-      },{ key: '1',
-        goodsIndex: '2',
-        goodsName: '博世空rrrrrrrrrrrrrrrrrrrrrr气滤清器2',
-        goodsPrice: '200',
-        goodsCount:'1002',
-        goodsSrc:<img  src="https://image.autozi.com/goodsImage/170/1700000970/150_960_1.jpg"/>
-
-      },{ key: '2',
-        goodsIndex: '3',
-        goodsName: '博世滤清器2',
-        goodsPrice: '50',
-        goodsCount:'1003',
-        goodsSrc:<img  src="http://image.autozi.com/goods/6114/672/1309051537583735/thumb_960/thumb_960_96095744585-cbe9-4723-845c-c4cd97e333eb.jpg"/>
-
-      },{ key: '3',
-        goodsIndex: '4',
-        goodsName: '博世空气165454646滤清器2',
-        goodsPrice: '200',
-        goodsCount:'100',
-        goodsSrc:<img  src="https://image.autozi.com/goodsImage/170/1700000970/150_960_1.jpg"/>
-
-      }
-      ],
-      count: 2,
+      dataSource: [],
+      count: 0,
+      modal1Visible: false,
+      modal2Visible: false,
     };
+  }
+
+
+  setModalVisible(modalVisible) {
+    this.setState({ modalVisible });
+    // console.log(this.props.te.props.defaultValue)
   }
   onCellChange = (index, key) => {
+    var self = this
+    var select = -1;//0：修改商品名称 1：修改商品价格 2：修改商品库存
     return (value) => {
-      const dataSource = [...this.state.dataSource];
-      dataSource[index][key] = value;
-      this.setState({ dataSource });
+          const dataSource = [...this.state.dataSource];
+        // console.log(index,key,value,dataSource[index].goodsId)
+  
+      // dataSource[index][key] = value;
+      // this.setState({ dataSource });
+      switch (key) {
+         case 'goodsName':
+        //商品名称
+          select=0;
+
+          break;
+         case 'goodsPrice':
+        //商品价格
+          select = 1;
+          break;
+        case 'goodsCount':
+        //商品库存
+          select =2;
+          break;
+       
+      }
+      fetch('/api/update',{
+        method:'POST',
+        headers:{
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body:JSON.stringify({
+          optionValue:value,
+          optionNum :select,
+          optionId: dataSource[index].goodsId
+        })
+      }).then(function (response) {
+         return response.json()
+      }).then(function(results){
+          // console.log("更新后的结果"+JSON.stringify(results))
+          if (results.n>0) {
+              dataSource[index][key] = value;
+              self.setState({ dataSource });
+          }
+
+      })
+
+
+
     };
   }
+     
   onDelete = (index) => {
+     var self = this;
     const dataSource = [...this.state.dataSource];
-    dataSource.splice(index, 1);
-    this.setState({ dataSource });
+    fetch('/api/delete',{
+      method:'POST',
+      headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+     },
+      body:JSON.stringify({
+        goodsName : dataSource[index].goodsName
+      })
+    }).then(function (response) {
+   
+          return response.json()
+    }).then(function (result) {
+          dataSource.splice(index, 1);
+          for (var i = 0; i < dataSource.length; i++) {
+              dataSource[i].goodsIndex= i+1;
+                }
+          self.setState({ dataSource });
+    },function (error) {
+        console.log(error)
+    })
+
   }
-  handleAdd = () => {
-    const { count, dataSource } = this.state;
-    const newData = {
-      key: count,
-      name: `Edward King ${count}`,
-      age: 32,
-      address: `London, Park Lane no. ${count}`,
-    };
-    this.setState({
-      dataSource: [...dataSource, newData],
-      count: count + 1,
-    });
-  }
+
+
   render() {
-    const { dataSource } = this.state;
+    const { dataSource,count,modalVisible} = this.state;
     const columns = this.columns;
     return (
       <div>
-        <Button className="editable-add-btn" onClick={this.handleAdd}>Add</Button>
         <Table bordered dataSource={dataSource} columns={columns} loading={false}/>
+          <Modal
+          title="商品添加"
+          wrapClassName="vertical-center-modal"
+          visible={this.state.modalVisible}
+          okText = '添加'
+          cancelText= '取消'
+          onOk={() => this.setModalVisible(false)}
+          onCancel={() => this.setModalVisible(false)}
+        >
+    
+         <p style={{ textAlign: 'center'}}><Tooltip placement="right" title='请输入商品名称' >商品名称:<Input placeholder='请输入商品名称'  style={{ width :240,marginLeft:20,marginTop:10}}/></Tooltip></p>
+          <p style={{ textAlign: 'center'}}><Tooltip placement="right" title='请输入商品价格' >商品价格:<InputNumber ref = 'te' min={0} onChange={onChange} defaultValue={0} style={{ width :240,marginLeft:20,marginTop:10}}/></Tooltip></p>
+           <p style={{ textAlign: 'center'}}><Tooltip placement="right" title='请输入商品库存' >商品库存:<InputNumber min={0}  defaultValue={0} style={{ width :240,marginLeft:20,marginTop:10}}/></Tooltip></p>
+            <p style={{ textAlign: 'center'}}>商品分类:<Select defaultValue="1" style={{ width :240,marginLeft:20,marginTop:10}} >
+              <Select.Option value="1">油品</Select.Option>
+              <Select.Option value="2">蓄电池</Select.Option>
+              <Select.Option value="3" >过滤器</Select.Option>
+              <Select.Option value="4">制动器</Select.Option>
+               <Select.Option value="5">轮胎</Select.Option>
+          </Select></p>
+        </Modal>
       </div>
     );
+  }
+
+  componentDidMount(){
+    console.log(this)
+    var self = this;
+    const data = []
+    fetch('/api/all')
+    .then(function (response) {
+      return response.json();
+    }).then(function (result) {
+      // console.log(result)
+      for (var i = 0; i < result.length; i++) {
+            // console.log(result[i]._id)
+        data.push({
+          key:i,
+          goodsId:result[i]._id,
+          goodsIndex: i+1,
+          goodsName: result[i].goodsName,
+          goodsCount:result[i].goodsCount,
+          goodsPrice:result[i].goodsPrice,
+          goodsSrc: <img src= {result[i].goodsSrc}/>
+     
+        })
+      }
+      // console.log(this)
+      
+      // console.log(data)
+      self.setState({
+        dataSource : data,
+        count :data.length
+       
+      })
+     
+    },function (error) {
+      console.log(error)
+    })
+   
   }
 }
 

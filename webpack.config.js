@@ -5,7 +5,8 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin')
 
 var ExtractCSS = new ExtractTextPlugin('style/vendor.css')
 var ExtractLESS = new ExtractTextPlugin('style/app.css')
-
+var host = '127.0.0.1:'
+var port = '3000'
 module.exports = {
   // 入口定义
   entry: {
@@ -83,22 +84,23 @@ module.exports = {
   devServer: {
     contentBase: './build',
     host: 'localhost',
-    port: 7000
-//  proxy: {
-//    '/api': {
-//      target: 'http://fengfangood.applinzi.com/',
-//      changeOrigin: true
-//    },
-//    '/mock': {
-//      target: 'http://localhost:9000',
-//      pathRewrite: {'^/mock': ''}
-//    },
-//    '/nodejs': {
-//      target: 'http://localhost:9000',
-//      changeOrigin: true,
-//      pathRewrite: {'^/nodejs': ''}
-//    }
-//  }
+    port: 7000,
+    proxy: {
+      '/api': {
+        target: 'http://192.168.1.100:3000/cars/goods',
+        changeOrigin: true,
+        pathRewrite: {'^/api': ''}
+      }
+      // '/mock': {
+      //   target: 'http://localhost:9000',
+      //   pathRewrite: {'^/mock': ''}
+      // },
+      // '/nodejs': {
+      //   target: 'http://localhost:9000',
+      //   changeOrigin: true,
+      //   pathRewrite: {'^/nodejs': ''}
+      // }
+    }
   },
 
   plugins: [
@@ -118,7 +120,7 @@ module.exports = {
     // 抽离CSS vendor， less
     ExtractCSS,
     ExtractLESS
-  ]
+  ],
 
   // externals
   // externals: {
